@@ -1,6 +1,6 @@
 // Update this constant with your ServiceNow credentials
 const options = {
-  url: 'https://dev95384.service-now.com/navpage.do',
+  url: 'https://dev95384.service-now.com',
   username: 'admin',
   password: 's3rviceNow!'
 };
@@ -11,6 +11,7 @@ const options = {
  * See https://www.npmjs.com/package/request
  */
 const request = require('request');
+
 
 
 // We'll use this regular expression to verify REST API's HTTP response status code.
@@ -101,6 +102,9 @@ function get(serviceNowTable, callback) {
 
 
 
+
+
+
 /**
  * @function post
  * @description Call the ServiceNow POST API.
@@ -177,6 +181,7 @@ function main() {
     }
     console.log(`\nResponse returned from GET request:\n${JSON.stringify(data)}`)
   });
+
   post('change_request', (data, error) => {
     if (error) {
       console.error(`\nError returned from POST request:\n${JSON.stringify(error)}`);
