@@ -114,9 +114,6 @@ class ServiceNowConnector {
   }
 
 
-
-
-
 /**
  * @memberof ServiceNowConnector
  * @method sendRequest
@@ -186,9 +183,6 @@ class ServiceNowConnector {
   }
 
 
-
-
-
 /**
  * @memberof ServiceNowConnector
  * @method post
@@ -207,7 +201,6 @@ class ServiceNowConnector {
     getCallOptions.method = 'POST';
     this.sendRequest(getCallOptions, (results, error) => callback(results, error));
   }
-
 
 
 }
