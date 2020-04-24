@@ -96,9 +96,10 @@ class ServiceNowAdapter extends EventEmitter {
  */
 healthcheck(callback) {
 
- log.debug ("Healthcheck Run");
+ log.info ("Healthcheck Run");
+ this.postRecord((result, error) => {
 
- this.getRecord((result, error) => {
+// this.getRecord((result, error) => {
    /**
     * For this lab, complete the if else conditional
     * statements that check if an error exists
@@ -119,11 +120,7 @@ healthcheck(callback) {
       * for the callback's errorMessage parameter.
       */
       this.emitOffline();
-      log.error (this.id + " error with " + error.errorMessage);
-
-      if (callback) {
-          callback(error);
-      }
+      log.error(`\nError returned from POST request:\n${JSON.stringify(error)}`);
 
    } else {
      /**
@@ -138,14 +135,15 @@ healthcheck(callback) {
       */
 
       this.emitOnline();
-      log.debug (this.id + " healthcheck online");
+//      log.debug(`\nResponse returned from GET request:\n${JSON.stringify(data)}`);
 
-      if (callback) {
-          callback(result);
-      }
-            
    }
+
+// If the callback parameter was specified then perform the callback call.   
+   if (typeof callback === 'undefined') {;}
+   else {callback(result,error);}
  });
+// log.setlevel(lvl);
 }
 
 
@@ -204,9 +202,86 @@ healthcheck(callback) {
      * Note how the object was instantiated in the constructor().
      * get() takes a callback function.
      */
-//     this.connector.get( (results, error) => callback(results, error));
-     this.connector.get(callback);
 
+     log.debug ("Running getRecord");
+     this.connector.get( (results, error) => 
+        {
+            if (error) {
+                log.error(`\nError returned from GET request:\n${JSON.stringify(error)}`);
+            }
+            log.debug ("*** Results variable is of type " + typeof(results));
+
+            if (typeof(results) == 'object') {
+                log.debug ("*** Body ***");
+
+                if (results.hasOwnProperty('body')) {
+                    log.debug ("***   Body Found   ***");
+                    let bodyData = JSON.parse(results['body']);
+
+                    log.debug ("Record Count = " + bodyData.result.length);
+
+// for each record in the data, do the following
+                    for (let i=0; i<bodyData.result.length;i++)
+                    {
+//                        log.debug ("*** Processing record index " +  i);
+//                        log.debug ("*** Processing record key " + bodyData.result[i]['number'])
+
+// create new object for limited data.
+                        bodyData.result[i]['change_ticket_number'] = bodyData.result[i]['number'];
+                        delete bodyData.result[i]['number'];
+
+                        bodyData.result[i]['change_ticket_key'] = bodyData.result[i]['sys_id'];
+                        delete bodyData.result[i]['sys_id'];
+
+                        let objData = bodyData.result[i];
+
+                        for (var prop in objData) {
+// Since we only need a subset of keys/properties to remain, remove all others from object
+                            if (prop == 'change_ticket_number') {;}
+                            else if (prop == 'change_ticket_key') {;}
+                            else if (prop == 'active') {;}
+                            else if (prop == 'priority') {;}
+                            else if (prop == 'description') {;}
+                            else if (prop == 'work_start') {;}
+                            else if (prop == 'work_end') {;}
+                            else {
+                                delete bodyData.result[i][prop]
+                            }
+                        }
+                    }
+// At this point we should have a modified array of objects in bodyData.
+                    log.debug ("***********");
+                    log.debug ("***  Modified Body Data - Should be a JSON String ***");
+                    log.debug (bodyData);
+
+
+// Set the body of the results to be the modified object data
+                
+                    log.debug ("***********");
+                    log.debug ("*** Results Body Data ***");
+                    log.debug(results.body);
+
+                    log.debug ("results.body is typeof " + typeof(results.body))
+                    log.debug ("bodyData is typeof " + typeof(bodyData))
+
+                    results.body = JSON.stringify(bodyData);
+
+//   Return the array of results which is essentially a single item array of a generic object matching the object
+// properties of a change record.....?    No idea if this right as lab is ambiguous.
+
+// If full response is required, change body data to results which should have modified body.....!
+                    callback(bodyData, error);
+
+                }
+                else {
+                   callback(results, error);
+                }
+            }
+            else
+            {
+                callback(results, error);
+            }
+        });
   }
 
   /**
@@ -225,7 +300,83 @@ healthcheck(callback) {
      * Note how the object was instantiated in the constructor().
      * post() takes a callback function.
      */
-//     this.connector.post( (results, error) => callback(results, error));
+     log.info ("Running postRecord");
+
+     this.connector.post( (results, error) => 
+        {
+            if (error) {
+                log.error(`\nError returned from POST request:\n${JSON.stringify(error)}`);
+            }
+            log.info(`\nResponse returned from POST request:\n${JSON.stringify(results)}`);
+
+            log.debug ("*** Results variable is of type " + typeof(results));
+
+
+            if (typeof(results) == 'object') {
+                log.debug ("*** Body ***");
+
+                if (results.hasOwnProperty('body')) {
+                    log.debug ("***   Body Found   ***");
+                    let bodyData = JSON.parse(results['body']);
+
+                    bodyData.result['change_ticket_number'] = bodyData.result['number'];
+                    delete bodyData.result['number'];
+
+                    bodyData.result['change_ticket_key'] = bodyData.result['sys_id'];
+                    delete bodyData.result['sys_id'];
+
+                    let objData = bodyData.result;
+
+                    for (var prop in objData) {
+// Since we only need a subset of keys/properties to remain, remove all others from object
+                        if (prop == 'change_ticket_number') {;}
+                        else if (prop == 'change_ticket_key') {;}
+                        else if (prop == 'active') {;}
+                        else if (prop == 'priority') {;}
+                        else if (prop == 'description') {;}
+                        else if (prop == 'work_start') {;}
+                        else if (prop == 'work_end') {;}
+                        else {
+                            delete bodyData.result[prop]
+                        }
+                    }
+
+                    
+// At this point we should have a modified object in bodyData.
+                    log.debug ("***********");
+                    log.debug ("***  Modified Body Data - Should be a JSON String ***");
+                    log.debug (bodyData);
+
+
+// Set the body of the results to be the modified object data
+                
+                    log.debug ("***********");
+                    log.debug ("*** Results Body Data ***");
+                    log.debug(results.body);
+
+                    log.debug ("results.body is typeof " + typeof(results.body))
+                    log.debug ("bodyData is typeof " + typeof(bodyData))
+
+                    results.body = JSON.stringify(bodyData);
+
+// Return the result which is essentially a single item generic object matching the object
+// properties of a change record.....?    No idea if this right as lab is ambiguous.
+
+// If full response is required, change body data to results which should have modified body.....!
+                    callback(bodyData, error);
+
+                }
+                else {
+                   callback(results, error);
+                }
+            }
+            else
+            {
+                callback(results, error);
+
+
+            }
+        });
   }
 }
 

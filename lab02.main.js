@@ -180,6 +180,7 @@ function main() {
       console.error(`\nError returned from GET request:\n${JSON.stringify(error)}`);
     }
     console.log(`\nResponse returned from GET request:\n${JSON.stringify(data)}`)
+    console.log(data);
   });
 
   post('change_request', (data, error) => {

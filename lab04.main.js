@@ -59,9 +59,9 @@ function mainOnObject() {
 
   connector.post((data,error)=>{
     if (error) {
-      console.error(`\nmain==>Error returned from GET request:\n${JSON.stringify(error)}`);
+      console.error(`\nmain==>Error returned from POST request:\n${JSON.stringify(error)}`);
     }
-    console.log(`\nmain==>Response returned from GET request:\n${JSON.stringify(data)}`)
+    console.log(`\nmain==>Response returned from POST request:\n${JSON.stringify(data)}`)
   });
 
 }
